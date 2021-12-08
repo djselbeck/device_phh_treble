@@ -120,11 +120,18 @@ if [ "$1" == "persist.sys.phh.caf.audio_policy" ];then
     fi
 
     sku="$(getprop ro.boot.product.vendor.sku)"
+    device="$(getprop ro.product.vendor.device)"
     if [[ "$prop_value" == 1 ]];then
         umount /vendor/etc/audio
         umount /vendor/etc/audio
 
-        if [ -f /vendor/etc/audio_policy_configuration_sec.xml ];then
+	if [ $device = "pdx213" ]; then
+	    cp /vendor/etc/audio/audio_policy_configuration.xml /mnt/phh
+	    sed -i 's/AUDIO_FORMAT_VORBIS/AUDIO_FORMAT_VORBIS_DISABLED/' /mnt/phh/audio_policy_configuration.xml
+	    mount /mnt/phh/audio_policy_configuration.xml /vendor/etc/audio_policy_configuration.xml
+	    chcon -h u:object_r:vendor_configs_file:s0  /vendor/etc/audio_policy_configuration.xml
+	    chmod 644 /vendor/etc/audio_policy_configuration.xml
+        elif [ -f /vendor/etc/audio_policy_configuration_sec.xml ];then
             mount /vendor/etc/audio_policy_configuration_sec.xml /vendor/etc/audio_policy_configuration.xml
         elif [ -f /vendor/etc/audio/sku_${sku}_qssi/audio_policy_configuration.xml ] && [ -f /vendor/etc/audio/sku_$sku/audio_policy_configuration.xml ];then
             umount /vendor/etc/audio
